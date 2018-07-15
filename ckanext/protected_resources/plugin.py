@@ -3,7 +3,7 @@ import ckan.plugins as p
 import ckan.plugins.toolkit as tk
 import ckan.logic as logic
 import ckan.authz as authz
-from ckan.logic.auth import get_resource_object
+from ckan.logic.auth import get_resource_object, get_package_object
 from ckan.logic.validators import Invalid
 
 log = logging.getLogger(__name__)
@@ -37,6 +37,20 @@ def resource_delete(context, data_dict):
     return {'succes': True}
 
 
+def package_delete(context, data_dict):
+    can_delete = logic.auth.delete.package_delete(context, data_dict)
+    if can_delete['success']:
+        pkg = get_package_object(context, data_dict).as_dict()
+        for resource in pkg.get('resources', []):
+            if resource.get('is_protected', None):
+                return {
+                    'success': False,
+                    'msg': "A package with a protected resource can't be deleted"
+                }
+
+    return {'success': True}
+
+
 def protected_sysadmin_only(value, context):
     """
     A Validator that throws invalid if a non sysadmin is change the field
@@ -60,7 +74,6 @@ def boolean_to_string(value):
         return 'False'
 
 class Protected_ResourcesPlugin(p.SingletonPlugin):
-    p.implements(p.IResourceController)
     p.implements(p.IAuthFunctions)
     p.implements(p.IValidators)
 
@@ -72,29 +85,6 @@ class Protected_ResourcesPlugin(p.SingletonPlugin):
 
     def get_auth_functions(self):
         return {
-            'resource_delete': resource_delete
+            'resource_delete': resource_delete,
+            'package_delete': package_delete,
         }
-
-    def before_create(self, context, resource):
-        pass
-
-    def after_create(self, context, resource):
-        pass
-
-    def before_update(self, context, current, resource):
-        pass
-
-    def after_update(self, context, resource):
-        pass
-
-    def before_delete(self, context, resource, resources):
-        # log.warning("Checking resource to see if we should block deletion: %s" % resource)
-        #
-        # raise Exception('This should block all deletes!')
-        pass
-
-    def after_delete(self, context, resources):
-        pass
-
-    def before_show(self, resource_dict):
-        return resource_dict
