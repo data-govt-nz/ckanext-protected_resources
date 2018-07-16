@@ -1,8 +1,6 @@
 import logging
 import ckan.plugins as p
-import ckan.plugins.toolkit as tk
 import ckan.logic as logic
-import ckan.authz as authz
 from ckan.logic.auth import get_resource_object, get_package_object
 from ckan.logic.validators import Invalid
 
@@ -34,7 +32,7 @@ def resource_delete(context, data_dict):
         if resource.extras.get('is_protected', None):
             return {'success': False, 'msg': 'Not able to delete a protected resource'}
         return can_delete
-    return {'succes': True}
+    return {'success': True}
 
 
 def package_delete(context, data_dict):
