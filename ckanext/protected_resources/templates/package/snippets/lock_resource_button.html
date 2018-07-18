@@ -1,0 +1,7 @@
+{% if resource.is_protected %}
+    {% set resource_url = h.url_for('protected_resource_unlock', dataset_id=resource.package_id, resource_id=resource.id) %}
+    <a class="btn btn-danger" href="{{resource_url}}"><i class="fa fa-unlock fa-lg"></i> Unlock Resource</a>
+{% else %}
+   {% set resource_url = h.url_for('protected_resource_lock', dataset_id=resource.package_id, resource_id=resource.id) %}
+    <a class="btn" href="{{resource_url}}"><i class="fa fa-lock fa-lg"></i> Lock Resource</a>
+{% endif %}

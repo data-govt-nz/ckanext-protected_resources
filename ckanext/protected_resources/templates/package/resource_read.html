@@ -1,0 +1,8 @@
+{% ckan_extends %}
+
+{% block resource_actions_inner %}
+    {% if h.check_access('protected_resource_lock') %}
+        <li>{% snippet 'package/snippets/lock_resource_button.html', resource=res %}</li>
+    {% endif %}
+    {{ super() }}
+{% endblock %}

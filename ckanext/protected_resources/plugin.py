@@ -1,41 +1,72 @@
 import logging
 import ckan.plugins as p
+import ckan.plugins.toolkit as tk
 import ckan.logic as logic
 from ckan.logic.auth import get_resource_object, get_package_object
-from ckan.logic.validators import Invalid
+from ckan import model
+from ckan.lib.base import BaseController, c
 
 log = logging.getLogger(__name__)
 
 
-# DONE can_delete is turned off if the resource is protected
-# DONE (I can not update if I'm not protected) hide field if the person is not a sysadmin
-# DONE extended to include a field for blocking deletion
-# DONE only admin can update the protected status
+class ProtectedResourceController(BaseController):
 
-# TODO consider A better design
-# 1. resource_protect action
-# 2. auth function for resource_protect
-# 3. a template is expanded to support the
+    def unlock(self, dataset_id, resource_id):
+
+        try:
+            context = {'model': model, 'user': c.user}
+            if not tk.check_access('protected_resource_lock', context, {'resource_id': resource_id}):
+                tk.abort(401, 'You are not authorized to lock resources')
+
+            p.toolkit.get_action('protected_resource_unlock')(context, {'resource_id': resource_id})
+        except p.toolkit.ObjectNotFound:
+            tk.abort(404, 'Resource object not found')
+        except p.toolkit.NotAuthorized:
+            tk.abort(401, 'You are not authorized to protect this resource')
+        except Exception, e:
+            msg = 'An error occured while unlocking your resource: [%s]'.format(str(e))
+            tk.abort(500, msg)
+        tk.redirect_to(controller='package', action='resource_read', id=dataset_id, resource_id=resource_id)
+
+    def lock(self, dataset_id, resource_id):
+
+        try:
+            context = {'model': model, 'user': c.user}
+            if not tk.check_access('protected_resource_lock', context):
+                tk.abort(401, 'You are not authorized to lock resources')
+            p.toolkit.get_action('protected_resource_lock')(context, {'resource_id': resource_id})
+        except p.toolkit.ObjectNotFound:
+            tk.abort(404, 'Resource object not found')
+        except p.toolkit.NotAuthorized:
+            tk.abort(401, 'You are not authorized to protect this resource')
+        except Exception, e:
+            msg = 'An error occured while locking your resource: [%s]'.format(str(e))
+            tk.abort(500, msg)
+
+        tk.redirect_to(controller='package', action='resource_read', id=dataset_id, resource_id=resource_id)
 
 
 def resource_delete(context, data_dict):
-    """
+    """Auth function override of resource_delete
     Calls the core resource delete and then checks if it is a protected resource
     :param context: dict
     :param data_dict: dict
     :return: success_dict: dict
     """
     can_delete = logic.auth.delete.resource_delete(context, data_dict)
-    log.warning('Resource plugin hook %s and data %s' % (can_delete, data_dict))
     if can_delete.get('success', None):
-        resource = get_resource_object(context, data_dict)
-        if resource.extras.get('is_protected', None):
+        resource = get_resource_object(context, data_dict).as_dict()
+        if resource.get('is_protected', None):
             return {'success': False, 'msg': 'Not able to delete a protected resource'}
-        return can_delete
-    return {'success': True}
+    return can_delete
 
 
 def package_delete(context, data_dict):
+    """Auth function override for package_delete
+    :param context:
+    :param data_dict:
+    :return:
+    """
     can_delete = logic.auth.delete.package_delete(context, data_dict)
     if can_delete['success']:
         pkg = get_package_object(context, data_dict).as_dict()
@@ -45,44 +76,97 @@ def package_delete(context, data_dict):
                     'success': False,
                     'msg': "A package with a protected resource can't be deleted"
                 }
-
     return {'success': True}
 
 
-def protected_sysadmin_only(value, context):
-    """
-    A Validator that throws invalid if a non sysadmin is change the field
+def protected_resource_lock(context, data_dict):
+    """Protect a resource from deletion
 
-    When called in a 'new' then default to False
+    This will update the resource extras field with an is_protected: True value
+
+    See :ref:`fields` and :ref:`records` for details on how to lay out records.
+    :param resource_id: resource id to lock
+    :type  resource_id: string
+
+    :return: The resource object updated
+    :rtype: dict
     """
     user = context.get('auth_user_obj', None)
-    from pprint import pformat
-    log.warning('TRYING TO UPDATE BUT SHOULD DEFAULT OUTT\n%s' % pformat(context))
-    if user and user.sysadmin:
-        return value
-    elif not context.get('for_edit', False): # default to false for creation requests
-        return False
-    else:
-        raise Invalid('Only a sysadmin can update this field')
+    if user and not user.sysadmin:
+        raise p.toolkit.ValidationError(["User must be a sysadmin to protect this resource"])
 
-def boolean_to_string(value):
-    if value:
-        return 'True'
-    else:
-        return 'False'
+    if not 'resource_id' in data_dict:
+        raise p.toolkit.ValidationError(['resource_id is a required parameter'])
 
-class Protected_ResourcesPlugin(p.SingletonPlugin):
+    resource = p.toolkit.get_action('resource_show')(context, {'id': data_dict['resource_id']})
+
+    resource['is_protected'] = True
+    updated_resource = p.toolkit.get_action('resource_update')(context, resource)
+
+    return updated_resource
+
+def protected_resource_unlock(context, data_dict):
+    """Protect a resource from deletion
+
+        This will delete the is_protected value
+
+        See :ref:`fields` and :ref:`records` for details on how to lay out records.
+        :param resource_id: resource id to lock
+        :type  resource_id: string
+
+        :return: The resource object updated
+        :rtype: dict
+        """
+    user = context.get('auth_user_obj', None)
+    if user and not user.sysadmin:
+        raise p.toolkit.ValidationError(["User must be a sysadmin to protect this resource"])
+
+    if not 'resource_id' in data_dict:
+        raise p.toolkit.ValidationError(['resource_id is a required parameter'])
+
+    resource = p.toolkit.get_action('resource_show')(context, {'id': data_dict['resource_id']})
+
+    if 'is_protected' in resource:
+        del resource['is_protected']
+
+    updated_resource = p.toolkit.get_action('resource_update')(context, resource)
+    return updated_resource
+
+
+def auth_protected_resource_lock(context, data_dict=None):
+    user = context.get('auth_user_obj', None)
+    if user and not user.sysadmin:
+        return {'success': False, 'msg': 'Only a sysadmin can protect resources'}
+    else:
+        return {'success': True}
+
+class Protected_ResourcesPlugin(p.SingletonPlugin, tk.DefaultDatasetForm):
     p.implements(p.IAuthFunctions)
-    p.implements(p.IValidators)
+    p.implements(p.IActions)
+    p.implements(p.IConfigurer)
+    p.implements(p.IRoutes, inherit=True)
 
-    def get_validators(self):
+    def update_config(self, config):
+        tk.add_template_directory(config, 'templates')
+
+    # IActions
+    def get_actions(self):
         return {
-            'protected_sysadmin_only': protected_sysadmin_only,
-            'boolean_to_string': boolean_to_string,
+            'protected_resource_lock': protected_resource_lock,
+            'protected_resource_unlock': protected_resource_unlock
         }
 
+    # IAuthFunctions
     def get_auth_functions(self):
         return {
+            'protected_resource_lock': auth_protected_resource_lock,
             'resource_delete': resource_delete,
             'package_delete': package_delete,
         }
+
+    # IRoutes
+    def before_map(self, map):
+        controller = 'ckanext.protected_resources.plugin:ProtectedResourceController'
+        map.connect('protected_resource_lock', '/dataset/{dataset_id}/resource/{resource_id}/lock', controller=controller, action='lock')
+        map.connect('protected_resource_unlock', '/dataset/{dataset_id}/resource/{resource_id}/unlock', controller=controller, action='unlock')
+        return map
