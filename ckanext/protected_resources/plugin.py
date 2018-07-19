@@ -24,7 +24,7 @@ class ProtectedResourceController(BaseController):
         except p.toolkit.NotAuthorized:
             tk.abort(401, 'You are not authorized to protect this resource')
         except Exception, e:
-            msg = 'An error occured while unlocking your resource: [%s]'.format(str(e))
+            msg = 'An error occured while unlocking your resource: [{}]'.format(str(e))
             tk.abort(500, msg)
         tk.redirect_to(controller='package', action='resource_read', id=dataset_id, resource_id=resource_id)
 
@@ -40,7 +40,7 @@ class ProtectedResourceController(BaseController):
         except p.toolkit.NotAuthorized:
             tk.abort(401, 'You are not authorized to protect this resource')
         except Exception, e:
-            msg = 'An error occured while locking your resource: [%s]'.format(str(e))
+            msg = 'An error occured while locking your resource: [{}]'.format(str(e))
             tk.abort(500, msg)
 
         tk.redirect_to(controller='package', action='resource_read', id=dataset_id, resource_id=resource_id)
