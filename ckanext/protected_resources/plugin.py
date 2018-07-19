@@ -47,18 +47,31 @@ class ProtectedResourceController(BaseController):
 
 
 def resource_delete(context, data_dict):
-    """Auth function override of resource_delete
-    Calls the core resource delete and then checks if it is a protected resource
+    """Auth function override of ckan.logic.auth.delete.resource_delete function
+    Re-implement the resource_delete auth function so that we check the is_protected flag on a resource. before allowing deletion
+
     :param context: dict
     :param data_dict: dict
     :return: success_dict: dict
     """
-    can_delete = logic.auth.delete.resource_delete(context, data_dict)
-    if can_delete.get('success', None):
-        resource = get_resource_object(context, data_dict).as_dict()
+    model = context['model']
+    resource = get_resource_object(context, data_dict).as_dict()
+
+    # check authentication against package
+    pkg = model.Package.get(resource['package_id'])
+    if not pkg:
+        raise logic.NotFound('No package found for this resource, cannot check auth.')
+
+    pkg_dict = {'id': pkg.id}
+
+    # if you can update a package then you can delete it
+    can_update = tk.check_access('package_update', context, pkg_dict)
+    if can_update:
         if resource.get('is_protected', None):
-            return {'success': False, 'msg': 'Not able to delete a protected resource'}
-    return can_delete
+            return {'success': False, 'msg': 'Contact a system administrator to delete this resource'}
+    else:
+        return {'success': False, 'msg': 'Resource delete is not allowed'}
+    return {'success': True}
 
 
 def package_delete(context, data_dict):
@@ -67,15 +80,18 @@ def package_delete(context, data_dict):
     :param data_dict:
     :return:
     """
+    log.info("package_delete override called {}".format(data_dict))
     can_delete = logic.auth.delete.package_delete(context, data_dict)
     if can_delete['success']:
         pkg = get_package_object(context, data_dict).as_dict()
         for resource in pkg.get('resources', []):
             if resource.get('is_protected', None):
-                return {
+                msg = {
                     'success': False,
                     'msg': "A package with a protected resource can't be deleted"
                 }
+                log.info("package_delete is not allowed result msg: {}".format(msg))
+                return msg
     return {'success': True}
 
 
