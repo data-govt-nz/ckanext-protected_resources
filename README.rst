@@ -5,10 +5,10 @@ ckanext-protected_resources
 
 protected_resources is a simple plugin for allowing system administrators the capability to stop deletes from happening.
 
-- When a resource is protected, the editor/admin user will not be able to delete the resource.
-- When a resource is protected, the sysadmin will be able to delete the resource.
+- When a resource is protected, all users will not be allwed to delete the resource
 - A dataset with a protected resource will not be able to be deleted.
 - Only a sysadmin can update the protected status of a resource.
+- A protected resource can still have it's description/data updated
 
 ------------
 Requirements
@@ -39,23 +39,6 @@ To install ckanext-protected_resources:
 3. Add ``protected_resources`` to the ``ckan.plugins`` setting in your CKAN
    config file (by default the config file is located at
    ``/etc/ckan/default/production.ini``).
-
-
-4. Add the is_protected field to your schema::
-
-    {
-      "field_name": "is_protected",
-      "label": "Protected",
-      "help_text": "Should resource deletion be disabled?",
-      "help_inline": true,
-      "preset": "select",
-      "validators": "protected_sysadmin_only boolean_validator ignore_missing ",
-      "output_validators": "boolean_to_string",
-      "choices": [
-        {"value": "True", "label":"Protected from deletion"},
-        {"value": "False", "label":"Not protected from deletion"}
-      ]
-    }
 
 5. Restart CKAN. For example if you've deployed CKAN with Apache on Ubuntu::
 
