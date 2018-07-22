@@ -84,14 +84,13 @@ def package_delete(context, data_dict):
     can_delete = logic.auth.delete.package_delete(context, data_dict)
     if can_delete['success']:
         pkg = get_package_object(context, data_dict).as_dict()
-        for resource in pkg.get('resources', []):
-            if resource.get('is_protected', None):
-                msg = {
-                    'success': False,
-                    'msg': "A package with a protected resource can't be deleted"
-                }
-                log.info("package_delete is not allowed result msg: {}".format(msg))
-                return msg
+        is_protected = package_has_protected_resource(pkg)
+        if is_protected:
+            msg = {
+                'success': False,
+                'msg': "A package with a protected resource can't be deleted"
+            }
+            return msg
     return {'success': True}
 
 
@@ -156,12 +155,29 @@ def auth_protected_resource_lock(context, data_dict=None):
     else:
         return {'success': True}
 
+def package_has_protected_resource(package_dict):
+    """
+    A helper function for checking if a package dict contains a protected resource
+    :param package_dict:
+    :return:
+    """
+    protected_resources = [r for r in package_dict.get('resources', []) if r.get('is_protected', False)]
+    return len(protected_resources) != 0
+
 class Protected_ResourcesPlugin(p.SingletonPlugin, tk.DefaultDatasetForm):
     p.implements(p.IAuthFunctions)
     p.implements(p.IActions)
     p.implements(p.IConfigurer)
     p.implements(p.IRoutes, inherit=True)
+    p.implements(p.ITemplateHelpers)
 
+    # ITemplateHelpers
+    def get_helpers(self):
+        return {
+            'package_has_protected_resource': package_has_protected_resource
+        }
+
+    # IConfigurer
     def update_config(self, config):
         tk.add_template_directory(config, 'templates')
 
