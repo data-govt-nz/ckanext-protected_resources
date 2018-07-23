@@ -171,15 +171,20 @@ class Protected_ResourcesPlugin(p.SingletonPlugin, tk.DefaultDatasetForm):
     p.implements(p.IRoutes, inherit=True)
     p.implements(p.ITemplateHelpers)
 
+    def sysadmin_email(self):
+        return self.mail_from
     # ITemplateHelpers
     def get_helpers(self):
         return {
-            'package_has_protected_resource': package_has_protected_resource
+            'package_has_protected_resource': package_has_protected_resource,
+            'sysadmin_email': self.sysadmin_email
         }
 
     # IConfigurer
     def update_config(self, config):
         tk.add_template_directory(config, 'templates')
+        if 'smtp.mail_from' in config:
+            self.mail_from = config['smtp.mail_from']
 
     # IActions
     def get_actions(self):

@@ -1,10 +1,16 @@
 {% ckan_extends %}
+ {% set is_protected = h.package_has_protected_resource(data) %}
+{% block disclaimer %}
+
+    {% if is_protected %}
+        <p class="action-info smaller">This dataset contains a protected resource, contact <a href="mailto:{{h.sysadmin_email()}}">{{h.sysadmin_email()}}</a> to request deletion.</p>
+    {% endif %}
+    {{ super() }}
+{% endblock %}
+
+
 {% block delete_button %}
-    {% set is_protected = h.package_has_protected_resource(data) %}
     {% if h.check_access('package_delete', {'id': data.id}) and not data.state == 'deleted' and not is_protected%}
           <a class="btn btn-danger pull-left" href="{% url_for controller='package', action='delete', id=data.id %}" data-module="confirm-action" data-module-content="{{ _('Are you sure you want to delete this dataset?') }}">{% block delete_button_text %}{{ _('Delete') }}{% endblock %}</a>
-    {% endif %}
-    {% if is_protected %}
-        <span class="pull-left">This dataset contains a protected resource, unlock all resources before deletion</span>
     {% endif %}
 {% endblock %}
