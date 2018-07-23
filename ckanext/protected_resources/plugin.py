@@ -3,11 +3,12 @@ import ckan.plugins as p
 import ckan.plugins.toolkit as tk
 import ckan.logic as logic
 from ckan.logic.auth import get_resource_object, get_package_object
+from ckan.logic.action.delete import resource_delete as resource_delete_core
 from ckan import model
 from ckan.lib.base import BaseController, c
 
-log = logging.getLogger(__name__)
 
+log = logging.getLogger(__name__)
 
 class ProtectedResourceController(BaseController):
 
@@ -164,6 +165,15 @@ def package_has_protected_resource(package_dict):
     protected_resources = [r for r in package_dict.get('resources', []) if r.get('is_protected', False)]
     return len(protected_resources) != 0
 
+def resource_delete_override(context, data_dict):
+
+    resource = p.toolkit.get_action('resource_show')(context, data_dict)
+
+    if resource.get('is_protected', None):
+        raise p.toolkit.ValidationError(['A protected resource can never be deleted'])
+    return resource_delete_core(context, data_dict)
+
+
 class Protected_ResourcesPlugin(p.SingletonPlugin, tk.DefaultDatasetForm):
     p.implements(p.IAuthFunctions)
     p.implements(p.IActions)
@@ -190,7 +200,8 @@ class Protected_ResourcesPlugin(p.SingletonPlugin, tk.DefaultDatasetForm):
     def get_actions(self):
         return {
             'protected_resource_lock': protected_resource_lock,
-            'protected_resource_unlock': protected_resource_unlock
+            'protected_resource_unlock': protected_resource_unlock,
+            'resource_delete': resource_delete_override
         }
 
     # IAuthFunctions
