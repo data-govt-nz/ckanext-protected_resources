@@ -15,7 +15,6 @@ Requirements
 ------------
 
 1. Tested and developed for anything newer than CKAN 2.7.
-2. Requires the scheming plugin.
 
 
 ------------
