@@ -1,5 +1,5 @@
 {% ckan_extends %}
- {% set is_protected = h.package_has_protected_resource(data) %}
+{% set is_protected = h.package_has_protected_resource(data) %}
 {% block disclaimer %}
 
     {% if is_protected %}
