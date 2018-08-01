@@ -155,6 +155,9 @@ def package_has_protected_resource(package_dict):
     :return:
     """
     resource_ids = tuple([r['id'] for r in package_dict.get('resources', [])])
+    if len(resource_ids) == 0:
+        return False
+
     query = 'SELECT resource_id FROM resource_protected WHERE resource_id in :ids'
     result = model.Session.execute(query, {'ids': resource_ids})
     return result.rowcount > 0
