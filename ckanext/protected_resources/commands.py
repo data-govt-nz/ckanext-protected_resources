@@ -1,5 +1,7 @@
-from ckan.lib.cli import CkanCommand
+import os
 import sys
+from ckan.lib.cli import CkanCommand, parse_db_config
+
 
 class AdminCommand(CkanCommand):
     '''
@@ -20,7 +22,7 @@ class AdminCommand(CkanCommand):
         # load pylons config
         self._load_config()
         options = {
-            'setup-protected-resources-table': self.setup_protected_resources,
+            'setup-protected-resources': self.setup_protected_resources,
             'help': self.help,
         }
 
@@ -32,6 +34,8 @@ class AdminCommand(CkanCommand):
             sys.exit(1)
 
     def setup_protected_resources(self, **kwargs):
-        from pprint import pformat
-        print("args to this are....")
-        print(pformat(kwargs))
+        template_filename = os.path.join(os.path.dirname(__file__),
+                                         u'set_protected_resource_table.sql')
+        with open(template_filename) as f:
+            content = f.read()
+            print content.format(**parse_db_config())
