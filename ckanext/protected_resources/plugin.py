@@ -64,7 +64,7 @@ def package_delete(context, data_dict):
 def protected_resource_lock(context, data_dict):
     """Protect a resource from deletion
 
-    This will update the resource extras field with an is_protected: True value
+    This will lock a resource from deletion
 
     See :ref:`fields` and :ref:`records` for details on how to lay out records.
     :param resource_id: resource id to lock
@@ -74,7 +74,7 @@ def protected_resource_lock(context, data_dict):
     :rtype: dict
     """
     user = context.get('auth_user_obj', None)
-    if user and not user.sysadmin:
+    if not user or not user.sysadmin:
         raise p.toolkit.ValidationError(["User must be a sysadmin to protect this resource"])
 
     if not 'resource_id' in data_dict:
@@ -107,7 +107,7 @@ def protected_resource_unlock(context, data_dict):
         :rtype: dict
         """
     user = context.get('auth_user_obj', None)
-    if user and not user.sysadmin:
+    if not user or not user.sysadmin:
         raise p.toolkit.ValidationError(["User must be a sysadmin to protect this resource"])
 
     if not 'resource_id' in data_dict:
@@ -118,20 +118,18 @@ def protected_resource_unlock(context, data_dict):
     if not resource_has_protected_status(data_dict['resource_id']):
         raise p.toolkit.ValidationError(['This resource is already unlocked'])
     else:
-        log.error("WE're on the right track my dude")
         qry = "DELETE FROM resource_protected WHERE resource_id = :resource_id"
         model.Session.execute(qry, {
             'resource_id': data_dict['resource_id']
         })
         model.Session.commit()
 
-    updated_resource = p.toolkit.get_action('resource_update')(context, resource)
-    return updated_resource
+    return resource
 
 
 def auth_protected_resource_lock(context, data_dict=None):
     user = context.get('auth_user_obj', None)
-    if user and not user.sysadmin:
+    if not user or not user.sysadmin:
         return {'success': False, 'msg': 'Only a sysadmin can protect resources'}
     else:
         return {'success': True}

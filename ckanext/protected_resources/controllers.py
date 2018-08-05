@@ -8,7 +8,7 @@ class ProtectedResourceController(BaseController):
         try:
             context = {'model': model, 'user': c.user}
             if not tk.check_access('protected_resource_lock', context, {'resource_id': resource_id}):
-                tk.abort(401, 'You are not authorized to lock resources')
+                tk.abort(401, 'You are not authorized to unlock resources')
 
             tk.get_action('protected_resource_unlock')(context, {'resource_id': resource_id})
         except tk.ObjectNotFound:
@@ -29,7 +29,7 @@ class ProtectedResourceController(BaseController):
         except tk.ObjectNotFound:
             tk.abort(404, 'Resource object not found')
         except tk.NotAuthorized:
-            tk.abort(401, 'You are not authorized to protect this resource')
+            tk.abort(401, 'You are not authorized to lock resources')
         except Exception, e:
             msg = 'An error occured while locking your resource: [{}]'.format(str(e))
             tk.abort(500, msg)
