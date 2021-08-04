@@ -1,4 +1,3 @@
-
 ===========================
 ckanext-protected_resources
 ===========================
@@ -41,7 +40,13 @@ To install ckanext-protected_resources:
 
 4. Add the resource_protected table to your ckan database::
 
-      paster --plugin=ckanext-protected_resources admin setup-protected-resources | sudo -u postgres pql --set ON_ERROR_STOP=1
+      # ckan >= 2.9
+      ckan -c /PATH_TO_YOUR_INI_FILE/FILENAME.ini protected-resources setup-protected-resources | \
+               sudo -u postgres pql --set ON_ERROR_STOP=1
+
+     # ckan < 2.9
+     paster --plugin=ckanext-protected_resources admin setup-protected-resources | \
+          sudo -u postgres pql --set ON_ERROR_STOP=1
 
 5. Restart CKAN. For example if you've deployed CKAN with Apache on Ubuntu::
 
