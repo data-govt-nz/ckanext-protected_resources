@@ -82,7 +82,7 @@ setup(
         [ckan.plugins]
         protected_resources=ckanext.protected_resources.plugin:Protected_ResourcesPlugin
         [paste.paster_command]
-        admin=ckanext.protected_resources.commands:AdminCommand
+        admin=ckanext.protected_resources.commands.protected_resources:Admin
         [babel.extractors]
         ckan = ckan.lib.extract:extract_ckan
     ''',

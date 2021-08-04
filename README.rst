@@ -1,7 +1,6 @@
-
-=============
+===========================
 ckanext-protected_resources
-=============
+===========================
 
 protected_resources is a simple plugin for allowing system administrators the capability to stop deletes from happening.
 
@@ -41,16 +40,22 @@ To install ckanext-protected_resources:
 
 4. Add the resource_protected table to your ckan database::
 
-      paster --plugin=ckanext-protected_resources admin setup-protected-resources | sudo -u postgres pql --set ON_ERROR_STOP=1
+      # ckan >= 2.9
+      ckan -c /PATH_TO_YOUR_INI_FILE/FILENAME.ini protected-resources setup-protected-resources | \
+               sudo -u postgres pql --set ON_ERROR_STOP=1
+
+     # ckan < 2.9
+     paster --plugin=ckanext-protected_resources admin setup-protected-resources | \
+          sudo -u postgres pql --set ON_ERROR_STOP=1
 
 5. Restart CKAN. For example if you've deployed CKAN with Apache on Ubuntu::
 
      sudo service apache2 reload
 
 
----------------------------------
+-----------------------------------------------
 Registering ckanext-protected_resources on PyPI
----------------------------------
+-----------------------------------------------
 
 ckanext-protected_resources should be availabe on PyPI as
 https://pypi.python.org/pypi/ckanext-protected_resources. If that link doesn't work, then
@@ -77,9 +82,9 @@ steps:
        git push --tags
 
 
-----------------------------------------
+------------------------------------------------------
 Releasing a New Version of ckanext-protected_resources
-----------------------------------------
+------------------------------------------------------
 
 ckanext-protected_resources is availabe on PyPI as https://pypi.python.org/pypi/ckanext-protected_resources.
 To publish a new version to PyPI follow these steps:
