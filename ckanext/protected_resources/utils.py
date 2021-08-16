@@ -16,6 +16,14 @@ else:
     from ckan.model import parse_db_config
 
 
+def _redirect_to_resource(dataset_id, resource_id):
+    return tk.redirect_to(
+        controller='resource' if tk.check_ckan_version('2.9') else 'package',
+        action='read' if tk.check_ckan_version('2.9') else 'resource_read',
+        id=dataset_id,
+        resource_id=resource_id)
+
+
 def unlock(dataset_id, resource_id):
     try:
         context = {'model': model, 'user': c.user}
@@ -37,11 +45,7 @@ def unlock(dataset_id, resource_id):
             text_type(e))
         tk.abort(500, msg)
 
-    tk.redirect_to(
-        controller='resource' if tk.check_ckan_version('2.9') else 'package',
-        action='resource_read',
-        id=dataset_id,
-        resource_id=resource_id)
+    return _redirect_to_resource(dataset_id, resource_id)
 
 
 def lock(dataset_id, resource_id):
@@ -60,11 +64,7 @@ def lock(dataset_id, resource_id):
             str(e))
         tk.abort(500, msg)
 
-    tk.redirect_to(
-        controller='resource' if tk.check_ckan_version('2.9') else 'package',
-        action='resource_read',
-        id=dataset_id,
-        resource_id=resource_id)
+    return _redirect_to_resource(dataset_id, resource_id)
 
 
 def setup_protected_resources(**kwargs):
