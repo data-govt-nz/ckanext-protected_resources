@@ -39,7 +39,8 @@ class Protected_ResourcesPlugin(Mixin, tk.DefaultDatasetForm):
                 helpers.resource_has_protected_status,
             'package_has_protected_resource':
                 helpers.package_has_protected_resource,
-            'sysadmin_email': helpers.sysadmin_email
+            'sysadmin_email': helpers.sysadmin_email,
+            'check_ckan_version': tk.check_ckan_version,
         }
 
     # IConfigurer
