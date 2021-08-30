@@ -1,7 +1,7 @@
 
-=============
+===========================
 ckanext-protected_resources
-=============
+===========================
 
 protected_resources is a simple plugin for allowing system administrators the capability to stop deletes from happening.
 
@@ -47,58 +47,3 @@ To install ckanext-protected_resources:
 
      sudo service apache2 reload
 
-
----------------------------------
-Registering ckanext-protected_resources on PyPI
----------------------------------
-
-ckanext-protected_resources should be availabe on PyPI as
-https://pypi.python.org/pypi/ckanext-protected_resources. If that link doesn't work, then
-you can register the project on PyPI for the first time by following these
-steps:
-
-1. Create a source distribution of the project::
-
-     python setup.py sdist
-
-2. Register the project::
-
-     python setup.py register
-
-3. Upload the source distribution to PyPI::
-
-     python setup.py sdist upload
-
-4. Tag the first release of the project on GitHub with the version number from
-   the ``setup.py`` file. For example if the version number in ``setup.py`` is
-   0.0.1 then do::
-
-       git tag 0.0.1
-       git push --tags
-
-
-----------------------------------------
-Releasing a New Version of ckanext-protected_resources
-----------------------------------------
-
-ckanext-protected_resources is availabe on PyPI as https://pypi.python.org/pypi/ckanext-protected_resources.
-To publish a new version to PyPI follow these steps:
-
-1. Update the version number in the ``setup.py`` file.
-   See `PEP 440 <http://legacy.python.org/dev/peps/pep-0440/#public-version-identifiers>`_
-   for how to choose version numbers.
-
-2. Create a source distribution of the new version::
-
-     python setup.py sdist
-
-3. Upload the source distribution to PyPI::
-
-     python setup.py sdist upload
-
-4. Tag the new release of the project on GitHub with the version number from
-   the ``setup.py`` file. For example if the version number in ``setup.py`` is
-   0.0.2 then do::
-
-       git tag 0.0.2
-       git push --tags
