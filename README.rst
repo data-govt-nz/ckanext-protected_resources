@@ -1,4 +1,3 @@
-
 ===========================
 ckanext-protected_resources
 ===========================
@@ -10,11 +9,18 @@ protected_resources is a simple plugin for allowing system administrators the ca
 - Only a sysadmin can update the protected status of a resource.
 - A protected resource can still have it's description/data updated
 
+------------------
+CKAN < 2.9 support
+------------------
+As of `1.1.0` this extention has been made to work with CKAN 2.9. While attempts have been made to maintain compatibility
+with prior version of CKAN, there may be issues. If any issues are discovered we are happy to accept PRs. Alternatively for
+compatibility <2.9 the `1.0.0` tag can be used
+
 ------------
 Requirements
 ------------
 
-1. Tested and developed for anything newer than CKAN 2.7.
+1. Tested and developed for CKAN 2.9.
 
 
 ------------
@@ -41,7 +47,13 @@ To install ckanext-protected_resources:
 
 4. Add the resource_protected table to your ckan database::
 
-      paster --plugin=ckanext-protected_resources admin setup-protected-resources | sudo -u postgres pql --set ON_ERROR_STOP=1
+     # ckan >= 2.9
+     ckan -c /PATH_TO_YOUR_INI_FILE/FILENAME.ini protected-resources setup-protected-resources | \
+          sudo -u postgres pql --set ON_ERROR_STOP=1
+
+     # ckan < 2.9
+     paster --plugin=ckanext-protected_resources admin setup-protected-resources | \
+          sudo -u postgres pql --set ON_ERROR_STOP=1
 
 5. Restart CKAN. For example if you've deployed CKAN with Apache on Ubuntu::
 

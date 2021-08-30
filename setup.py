@@ -15,7 +15,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # http://packaging.python.org/en/latest/tutorial.html#version
-    version='1.0.0',
+    version='1.1.0',
 
     description='''A simple CKAN extension for allowing a system administrator to block specific resource from accidental deletion''',
     long_description=long_description,
@@ -82,7 +82,7 @@ setup(
         [ckan.plugins]
         protected_resources=ckanext.protected_resources.plugin:Protected_ResourcesPlugin
         [paste.paster_command]
-        admin=ckanext.protected_resources.commands:AdminCommand
+        admin=ckanext.protected_resources.commands.protected_resources:Admin
         [babel.extractors]
         ckan = ckan.lib.extract:extract_ckan
     ''',
