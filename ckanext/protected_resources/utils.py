@@ -5,7 +5,6 @@ from six import text_type
 import os
 
 import ckan.plugins.toolkit as tk
-from ckan.lib.base import c
 from ckan import model
 
 try:
@@ -26,7 +25,7 @@ def _redirect_to_resource(dataset_id, resource_id):
 
 def unlock(dataset_id, resource_id):
     try:
-        context = {'model': model, 'user': c.user}
+        context = {'model': model, 'user': tk.c.user}
         access = tk.check_access(
             'protected_resource_lock',
             context,
@@ -50,7 +49,7 @@ def unlock(dataset_id, resource_id):
 
 def lock(dataset_id, resource_id):
     try:
-        context = {'model': model, 'user': c.user}
+        context = {'model': model, 'user': tk.c.user}
         if not tk.check_access('protected_resource_lock', context):
             tk.abort(401, 'You are not authorized to lock resources')
         tk.get_action('protected_resource_lock')(
