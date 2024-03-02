@@ -1,10 +1,10 @@
 {% set is_protected = h.resource_has_protected_status(resource.id) %}
 {% if is_protected %}
-    {% set action_path = 'protected_resource.unlock' if  h.check_ckan_version('2.9') else 'protected_resource_unlock' %}
+    {% set action_path = 'protected_resource.unlock' %}
     {% set resource_url = h.url_for(action_path, dataset_id=resource.package_id, resource_id=resource.id) %}
     <a class="btn btn-danger" href="{{resource_url}}"><i class="fa fa-unlock fa-lg"></i> Unlock Resource</a>
 {% else %}
-    {% set action_path = 'protected_resource.lock' if  h.check_ckan_version('2.9') else 'protected_resource_lock' %}
+    {% set action_path = 'protected_resource.lock' %}
     {% set resource_url = h.url_for(action_path, dataset_id=resource.package_id, resource_id=resource.id) %}
     <a class="btn btn-default" href="{{resource_url}}"><i class="fa fa-lock fa-lg"></i> Lock Resource</a>
 {% endif %}
